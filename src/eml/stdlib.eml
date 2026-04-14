@@ -1,0 +1,30 @@
+# --- Fundamental Constants ---
+# zero() returns 0.0 by e(1, e(e(1, 1), 1)) -> e^1 - ln(e^e - ln(1))
+DEF zero() = e(1, e(e(1, 1), 1))
+DEF one() = 1
+
+# --- Basic Calculus-based Arithmetic ---
+# LN(x) = -ln(x) 근사 또는 e(0, x) 이용
+# e(zero(), x) = e^0 - ln(x) = 1 - ln(x)
+DEF _ln_gate(x) = e(zero(), x)
+
+# EXP(x) = e^x
+# e(x, one()) = e^x - ln(1) = e^x
+DEF exp(x) = e(x, 1)
+
+# --- Arithmetic Expansion ---
+# Multiplication: x * y = exp(ln(x) + ln(y))
+# 하지만 우리에겐 ADD가 없으므로 e(x, y)의 성질을 이용해 빌드업
+# x + y = ln(exp(x) * exp(y))
+
+# IDENTITY(x): x를 그대로 반환하는 게이트
+# exp(ln(x)) 구현이 어려우므로 기본 리터럴 x를 직접 활용하는 구조로 설계
+DEF id(x) = x
+
+# --- Advanced Logic (Physics Prep) ---
+# Inverse: 1/x = exp(-ln(x))
+DEF inv(x) = exp(e(zero(), x))
+
+# --- Multiplication Prototype ---
+# x * y 구현을 위해 내부적으로 복잡하게 중첩된 e 게이트를 사용
+DEF mul(x, y) = e(e(e(zero(), e(zero(), x)), e(e(zero(), e(zero(), y)), 1)), 1)
