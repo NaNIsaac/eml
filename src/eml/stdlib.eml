@@ -1,30 +1,37 @@
-# --- Fundamental Constants ---
-# zero() returns 0.0 by e(1, e(e(1, 1), 1)) -> e^1 - ln(e^e - ln(1))
+# EML Standard Library
+# Base operator: e(x, y) = exp(x) - ln(y)
+
+# --- Constants ---
+# zero() = e^1 - ln(e^e - ln(1)) = e - ln(e^e) = e - e = 0
 DEF zero() = e(1, e(e(1, 1), 1))
 DEF one() = 1
 
-# --- Basic Calculus-based Arithmetic ---
-# LN(x) = -ln(x) 근사 또는 e(0, x) 이용
-# e(zero(), x) = e^0 - ln(x) = 1 - ln(x)
-DEF _ln_gate(x) = e(zero(), x)
-
-# EXP(x) = e^x
-# e(x, one()) = e^x - ln(1) = e^x
+# --- Primitives derivable from e(x, y) ---
+# exp(x) = e^x  (since ln(1) = 0)
 DEF exp(x) = e(x, 1)
 
-# --- Arithmetic Expansion ---
-# Multiplication: x * y = exp(ln(x) + ln(y))
-# 하지만 우리에겐 ADD가 없으므로 e(x, y)의 성질을 이용해 빌드업
-# x + y = ln(exp(x) * exp(y))
-
-# IDENTITY(x): x를 그대로 반환하는 게이트
-# exp(ln(x)) 구현이 어려우므로 기본 리터럴 x를 직접 활용하는 구조로 설계
+# Identity
 DEF id(x) = x
 
-# --- Advanced Logic (Physics Prep) ---
-# Inverse: 1/x = exp(-ln(x))
-DEF inv(x) = exp(e(zero(), x))
+# one_minus_ln(x) = 1 - ln(x)   (fundamental "log gate")
+DEF one_minus_ln(x) = e(zero(), x)
 
-# --- Multiplication Prototype ---
-# x * y 구현을 위해 내부적으로 복잡하게 중첩된 e 게이트를 사용
-DEF mul(x, y) = e(e(e(zero(), e(zero(), x)), e(e(zero(), e(zero(), y)), 1)), 1)
+# sub1(x) = 1 - x   (via e^0 - ln(e^x) = 1 - x)
+DEF sub1(x) = e(zero(), exp(x))
+
+# --- Derived arithmetic ---
+# ln(x) = 1 - (1 - ln x)
+DEF ln(x) = sub1(one_minus_ln(x))
+
+# sub(a, b) = a - b      via e^(ln a) - ln(e^b) = a - b     [requires a != 0]
+DEF sub(a, b) = e(ln(a), exp(b))
+
+# neg(x) = -x            via (1 - x) - 1                     [requires x != 1]
+DEF neg(x) = sub(sub1(x), 1)
+
+# add(a, b) = a + b      via a - (-b)                        [requires a != 0, b != 1]
+DEF add(a, b) = sub(a, neg(b))
+
+# mul(a, b) = a * b      via exp(ln a + ln b)
+#   [requires a, b > 0; a != 1 (so ln a != 0); b != e (so ln b != 1)]
+DEF mul(a, b) = exp(add(ln(a), ln(b)))
