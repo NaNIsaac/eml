@@ -23,7 +23,7 @@ Defined: sq
 >> exit
 ```
 
-Input is either `DEF name(args) = expr` or an expression. Every macro is expanded down to nested `e(...)` calls, the expansion is printed, then evaluated. `src/eml/stdlib.eml` is loaded at start and defines `zero`, `exp`, `ln`, `sub1`, `sub`, `neg`, `add`, `mul`; the comments there list the domain restrictions of each derivation (e.g. `add(a, b)` needs a != 0, b != 1).
+Input is either `DEF name(args) = expr` or an expression; `exit` or `quit` leaves. Every macro is expanded down to nested `e(...)` calls, the expansion is printed, then evaluated. `src/eml/stdlib.eml` is loaded at start and defines `zero`, `one`, `exp`, `id`, `one_minus_ln`, `sub1`, `ln`, `sub`, `neg`, `add`, `mul`; the comments there list the domain restrictions of each derivation (e.g. `add(a, b)` needs a != 0, b != 1).
 
 ## Structure
 
