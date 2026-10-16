@@ -1,5 +1,7 @@
 # eml
 
+Moved into a private scratch repo; no longer maintained.
+
 A small REPL that builds arithmetic from a single binary operator, `e(x, y) = exp(x) - ln(y)` (EML, "exp minus log"), by textual macro expansion and evaluates the result with complex `cmath`.
 
 Toy project, not related to the X-ray analysis repos.
