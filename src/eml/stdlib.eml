@@ -1,0 +1,37 @@
+# EML Standard Library
+# Base operator: e(x, y) = exp(x) - ln(y)
+
+# --- Constants ---
+# zero() = e^1 - ln(e^e - ln(1)) = e - ln(e^e) = e - e = 0
+DEF zero() = e(1, e(e(1, 1), 1))
+DEF one() = 1
+
+# --- Primitives derivable from e(x, y) ---
+# exp(x) = e^x  (since ln(1) = 0)
+DEF exp(x) = e(x, 1)
+
+# Identity
+DEF id(x) = x
+
+# one_minus_ln(x) = 1 - ln(x)   (fundamental "log gate")
+DEF one_minus_ln(x) = e(zero(), x)
+
+# sub1(x) = 1 - x   (via e^0 - ln(e^x) = 1 - x)
+DEF sub1(x) = e(zero(), exp(x))
+
+# --- Derived arithmetic ---
+# ln(x) = 1 - (1 - ln x)
+DEF ln(x) = sub1(one_minus_ln(x))
+
+# sub(a, b) = a - b      via e^(ln a) - ln(e^b) = a - b     [requires a != 0]
+DEF sub(a, b) = e(ln(a), exp(b))
+
+# neg(x) = -x            via (1 - x) - 1                     [requires x != 1]
+DEF neg(x) = sub(sub1(x), 1)
+
+# add(a, b) = a + b      via a - (-b)                        [requires a != 0, b != 1]
+DEF add(a, b) = sub(a, neg(b))
+
+# mul(a, b) = a * b      via exp(ln a + ln b)
+#   [requires a, b > 0; a != 1 (so ln a != 0); b != e (so ln b != 1)]
+DEF mul(a, b) = exp(add(ln(a), ln(b)))
