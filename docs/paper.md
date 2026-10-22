@@ -11,7 +11,7 @@ This repo started on 2026-04-15, three weeks after v1.
 | Operator | `eml(x, y) = exp(x) − ln(y)`, Eq. (3) | `e(x, y)`, same definition |
 | Terminals | grammar `S → 1 \| eml(S, S)`, plus input variables (Sect. 4.2) | literal `1` plus numeric arguments. Every stdlib macro expands to `e` and number literals only (tested). The REPL also accepts `+ - * / **` between numbers, so input is not restricted to the grammar. |
 | Number model | complex, principal branch (Sect. 1); some compiled formulas rely on `ln 0 = −∞`, `e^{−∞} = 0` (Sect. 4.1); "pure Python" is said not to work out of the box | `cmath`: principal branch, `ln(0)` raises, no infinities. Constructions that pass through `ln 0` cannot be used here. |
-| `ln` | Eq. (5): `ln z = eml(1, eml(eml(1, z), 1))`, K = 7 | `ln(x) = e(zero(), e(e(zero(), x), 1))`: the same construction with 0 in place of the two outer 1s, K = 19. Eq. (5) typed into the REPL gives identical values at 2, −2, −1, i, −2−0i, 0.5. |
+| `ln` | Eq. (5): `ln z = eml(1, eml(eml(1, z), 1))`, K = 7 | `ln(x) = e(zero(), e(e(zero(), x), 1))`: the same construction with 0 in place of the two outer 1s, K = 19. Eq. (5) typed into the REPL gives bit-identical values at 2, −2, −1, i, −2−0i, 0.5, −1e-3 and 1e5·i, and values 1 ulp apart at 3−4i (imaginary part) and 1.5+2i (both parts). |
 | Negative real axis | Sect. 4.1: with the principal branch, Eq. (5) gives the wrong sign there (`ln(−1) = −iπ`) | True in exact arithmetic for both forms. In double precision `fl(π) < π`, so the intermediate `Im = −fl(π)` stays inside the strip and both forms return `cmath.log(x)`, including the `−0.0` side of the cut (tested). Any derivation of `i` or `π` through `ln(−1)` depends on this rounding. |
 
 ## Sizes
@@ -66,7 +66,7 @@ Inside these domains the relative error against direct `cmath` arithmetic stayed
 ## Open tasks
 
 - Derive the missing operations above. `i` and `π` need `ln(−1)`; see the negative-axis row.
-- Decide whether `ln` should switch to Eq. (5) (K 7 instead of 19). It changes every derived size, not the values.
+- Decide whether `ln` should switch to Eq. (5) (K 7 instead of 19). It changes every derived size. Values agree to about 1 ulp, not bit for bit (see the `ln` row above), so a repr-based regression check would flag the switch.
 - Decide on a strict mode that accepts only `e`, `1` and inputs, so that typed expressions are guaranteed to be pure EML.
 - Decide whether to emulate `ln 0 = −∞` and `e^{−∞} = 0`, which would admit the paper's extended-real constructions.
 - Expand macros on a tree instead of on text, which removes the 1000-step cap and the quadratic cost.
