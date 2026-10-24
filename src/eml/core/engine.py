@@ -6,9 +6,7 @@ class EMLEngine:
     MAX_EXPAND_ITERS = 1000
 
     def __init__(self):
-        self.macros: dict[str, dict] = {
-            "ZERO": {"params": [], "expr": "e(1, e(e(1, 1), 1))"}
-        }
+        self.macros: dict[str, dict] = {"ZERO": {"params": [], "expr": "e(1, e(e(1, 1), 1))"}}
 
     def define(self, line):
         match = re.match(r"(?i)DEF\s+(\w+)\s*\((.*)\)\s*=\s*(.*)", line)
@@ -24,7 +22,7 @@ class EMLEngine:
         return name
 
     def load_stdlib(self, filepath):
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith("#"):
@@ -44,7 +42,7 @@ class EMLEngine:
                 end = self._find_matching_paren(expr, paren)
                 if end == -1:
                     raise ValueError(f"unmatched parenthesis in call to '{name}'")
-                arg_str = expr[paren + 1:end]
+                arg_str = expr[paren + 1 : end]
                 args = self._split_args(arg_str) if arg_str.strip() else []
                 macro = self.macros[name]
                 if len(args) != len(macro["params"]):
@@ -52,7 +50,7 @@ class EMLEngine:
                         f"{name} expects {len(macro['params'])} arg(s), got {len(args)}"
                     )
                 body = self._substitute_params(macro["expr"], macro["params"], args)
-                expr = expr[:m.start()] + body + expr[end + 1:]
+                expr = expr[: m.start()] + body + expr[end + 1 :]
                 replaced = True
                 break
             if not replaced:
@@ -66,9 +64,9 @@ class EMLEngine:
         # Two-pass with sentinel tokens so param names can't collide with
         # macro names or with each other's replacement text.
         tokens = [f"\x00P{i}\x00" for i in range(len(params))]
-        for p, tok in zip(params, tokens):
+        for p, tok in zip(params, tokens, strict=True):
             body = re.sub(rf"\b{re.escape(p)}\b", tok, body)
-        for tok, a in zip(tokens, args):
+        for tok, a in zip(tokens, args, strict=False):
             body = body.replace(tok, f"({a})")
         return body
 
@@ -76,9 +74,9 @@ class EMLEngine:
     def _find_matching_paren(s, start):
         count = 0
         for i in range(start, len(s)):
-            if s[i] == '(':
+            if s[i] == "(":
                 count += 1
-            elif s[i] == ')':
+            elif s[i] == ")":
                 count -= 1
                 if count == 0:
                     return i
@@ -88,13 +86,13 @@ class EMLEngine:
     def _split_args(s):
         args, curr, depth = [], [], 0
         for char in s:
-            if char == ',' and depth == 0:
+            if char == "," and depth == 0:
                 args.append("".join(curr).strip())
                 curr = []
             else:
-                if char == '(':
+                if char == "(":
                     depth += 1
-                elif char == ')':
+                elif char == ")":
                     depth -= 1
                 curr.append(char)
         args.append("".join(curr).strip())
