@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from .core.engine import EMLEngine
@@ -34,7 +35,7 @@ def start_repl():
             break
 
         try:
-            if line[:3].upper() == "DEF":
+            if re.match(r"(?i)DEF\s", line):
                 name = engine.define(line)
                 if name:
                     print(f"Defined: {name}")

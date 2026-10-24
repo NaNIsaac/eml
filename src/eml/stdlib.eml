@@ -1,5 +1,11 @@
 # EML Standard Library
 # Base operator: e(x, y) = exp(x) - ln(y)
+# Evaluated with cmath: principal branch of ln, ln(0) is an error (no infinities).
+# Inputs may be complex. ln(exp(w)) = w holds only for -pi < Im w <= pi, so every
+# derivation that passes a value through exp and back through ln carries that strip
+# as a domain restriction; the conditions below were checked numerically (tests/).
+# Floating point adds one more: exp overflows above Re = ln(DBL_MAX) ~ 709.78, so
+# sub(a, b) needs Re b < 709.78, neg(x) needs Re x < 709.78, add(a, b) needs |Re b| < 709.78.
 
 # --- Constants ---
 # zero() = e^1 - ln(e^e - ln(1)) = e - ln(e^e) = e - e = 0
@@ -13,25 +19,28 @@ DEF exp(x) = e(x, 1)
 # Identity
 DEF id(x) = x
 
-# one_minus_ln(x) = 1 - ln(x)   (fundamental "log gate")
+# one_minus_ln(x) = 1 - ln(x)   (fundamental "log gate")     [requires x != 0]
 DEF one_minus_ln(x) = e(zero(), x)
 
-# sub1(x) = 1 - x   (via e^0 - ln(e^x) = 1 - x)
+# sub1(x) = 1 - x   (via e^0 - ln(e^x) = 1 - x)               [requires -pi < Im x <= pi]
 DEF sub1(x) = e(zero(), exp(x))
 
 # --- Derived arithmetic ---
-# ln(x) = 1 - (1 - ln x)
+# ln(x) = 1 - (1 - ln x)                                      [requires x != 0]
+#   Exactly, x on the negative real axis gives ln|x| - i*pi (Im(1 - ln x) = -pi);
+#   in double precision fl(pi) < pi, so the result matches cmath.log there too.
 DEF ln(x) = sub1(one_minus_ln(x))
 
-# sub(a, b) = a - b      via e^(ln a) - ln(e^b) = a - b     [requires a != 0]
+# sub(a, b) = a - b      via e^(ln a) - ln(e^b) = a - b     [requires a != 0, -pi < Im b <= pi]
 DEF sub(a, b) = e(ln(a), exp(b))
 
-# neg(x) = -x            via (1 - x) - 1                     [requires x != 1]
+# neg(x) = -x            via (1 - x) - 1                     [requires x != 1, -pi < Im x < pi]
 DEF neg(x) = sub(sub1(x), 1)
 
-# add(a, b) = a + b      via a - (-b)                        [requires a != 0, b != 1]
+# add(a, b) = a + b      via a - (-b)                        [requires a != 0, b != 1, -pi < Im b < pi]
 DEF add(a, b) = sub(a, neg(b))
 
 # mul(a, b) = a * b      via exp(ln a + ln b)
-#   [requires a, b > 0; a != 1 (so ln a != 0); b != e (so ln b != 1)]
+#   [requires a != 0, 1 (ln a != 0); b != 0, e (ln b != 1); any other complex a, b,
+#    because the outer exp removes the 2*pi*i errors of add on the branch strip]
 DEF mul(a, b) = exp(add(ln(a), ln(b)))
